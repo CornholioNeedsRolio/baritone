@@ -54,33 +54,64 @@ import java.util.stream.Stream;
 
 public class SelCommand extends Command {
 
-    private ISelectionManager manager = baritone.getSelectionManager();
+    private ISelectionManager manager;// = baritone.getSelectionManager();
     private BetterBlockPos pos1 = null;
     private ISchematic clipboard = null;
     private Vec3i clipboardOffset = null;
+    private boolean isHomeAreaCommand;
 
-    public SelCommand(IBaritone baritone) {
-        super(baritone, "sel", "selection", "s");
-        baritone.getGameEventHandler().registerEventListener(new AbstractGameEventListener() {
-            @Override
-            public void onRenderPass(RenderEvent event) {
-                if (!Baritone.settings().renderSelectionCorners.value || pos1 == null) {
-                    return;
+    public SelCommand(IBaritone baritone, boolean isHomeAreaCommand, String... names) {
+        super(baritone, names);
+
+        this.isHomeAreaCommand = isHomeAreaCommand;
+
+        if(isHomeAreaCommand)
+        {
+            manager = baritone.getHomeAreaSelectionManager();
+            baritone.getGameEventHandler().registerEventListener(new AbstractGameEventListener() {
+                @Override
+                public void onRenderPass(RenderEvent event) {
+
+                    drawPos1(Baritone.settings().renderHomeAreaSelectionCorners.value,
+                            Baritone.settings().colorHomeAreaSelectionPos1.value,
+                            Baritone.settings().selectionHomeAreaOpacity.value,
+                            Baritone.settings().selectionHomeAreaLineWidth.value,
+                            Baritone.settings().renderHomeAreaSelectionIgnoreDepth.value);
                 }
-                Color color = Baritone.settings().colorSelectionPos1.value;
-                float opacity = Baritone.settings().selectionOpacity.value;
-                float lineWidth = Baritone.settings().selectionLineWidth.value;
-                boolean ignoreDepth = Baritone.settings().renderSelectionIgnoreDepth.value;
-                IRenderer.startLines(color, opacity, lineWidth, ignoreDepth);
-                IRenderer.drawAABB(new AxisAlignedBB(pos1, pos1.add(1, 1, 1)));
-                IRenderer.endLines(ignoreDepth);
-            }
-        });
+            });
+
+        }
+        else {
+            manager = baritone.getSelectionManager();
+            baritone.getGameEventHandler().registerEventListener(new AbstractGameEventListener() {
+                @Override
+                public void onRenderPass(RenderEvent event) {
+
+                    drawPos1(Baritone.settings().renderSelectionCorners.value,
+                            Baritone.settings().colorSelectionPos1.value,
+                            Baritone.settings().selectionOpacity.value,
+                            Baritone.settings().selectionLineWidth.value,
+                            Baritone.settings().renderSelectionIgnoreDepth.value);
+                }
+            });
+        }
+    }
+
+    private void drawPos1(boolean renderSelectionCorners, Color color, float opacity, float lineWidth, boolean ignoreDepth)
+    {
+        if (!renderSelectionCorners || pos1 == null) {
+            return;
+        }
+
+        IRenderer.startLines(color, opacity, lineWidth, ignoreDepth);
+        IRenderer.drawAABB(new AxisAlignedBB(pos1, pos1.add(1, 1, 1)));
+        IRenderer.endLines(ignoreDepth);
     }
 
     @Override
     public void execute(String label, IArgConsumer args) throws CommandException {
-        Action action = Action.getByName(args.getString());
+        Action action = Action.getByName(args.getString(), !isHomeAreaCommand);
+
         if (action == null) {
             throw new CommandInvalidTypeException(args.consumed(), "an action");
         }
@@ -248,7 +279,7 @@ public class SelCommand extends Command {
                     .sortAlphabetically()
                     .stream();
         } else {
-            Action action = Action.getByName(args.getString());
+            Action action = Action.getByName(args.getString(), !isHomeAreaCommand);
             if (action != null) {
                 if (action == Action.POS1 || action == Action.POS2) {
                     if (args.hasAtMost(3)) {
@@ -282,11 +313,19 @@ public class SelCommand extends Command {
 
     @Override
     public String getShortDesc() {
+        if(isHomeAreaCommand)
+            return "HomeArea commands, work exactly the same as sel";
         return "WorldEdit-like commands";
     }
 
     @Override
     public List<String> getLongDesc() {
+        if(isHomeAreaCommand)
+            return getLongHADesc();
+        return getLongSelDesc();
+    }
+
+    public List<String> getLongSelDesc() {
         return Arrays.asList(
                 "The sel command allows you to manipulate Baritone's selections, similarly to WorldEdit.",
                 "",
@@ -316,31 +355,59 @@ public class SelCommand extends Command {
         );
     }
 
-    enum Action {
-        POS1("pos1", "p1", "1"),
-        POS2("pos2", "p2", "2"),
-        CLEAR("clear", "c"),
-        UNDO("undo", "u"),
-        SET("set", "fill", "s", "f"),
-        WALLS("walls", "w"),
-        SHELL("shell", "shl"),
-        CLEARAREA("cleararea", "ca"),
-        REPLACE("replace", "r"),
-        EXPAND("expand", "ex"),
-        COPY("copy", "cp"),
-        PASTE("paste", "p"),
-        CONTRACT("contract", "ct"),
-        SHIFT("shift", "sh");
-        private final String[] names;
+    public List<String> getLongHADesc() {
+        return Arrays.asList(
+                "Can be used as #homearea or #ha",
+                "",
+                "Using these home area selections, you can keep baritone from breaking your walls or placing blocks in the middle of your base, BEWHARE ANY BUILD PROCESS WILL IGNORE IT",
+                "",
+                "Also they are saved so you don't have to worry about disconnection or closing your minecraft instance",
+                "",
+                "The expand/contract/shift commands use a kind of selector to choose which selections to target. Supported ones are a/all, n/newest, and o/oldest.",
+                "",
+                "Usage:",
+                "> ha pos1/p1/1 - Set position 1 to your current position.",
+                "> ha pos1/p1/1 <x> <y> <z> - Set position 1 to a relative position.",
+                "> ha pos2/p2/2 - Set position 2 to your current position.",
+                "> ha pos2/p2/2 <x> <y> <z> - Set position 2 to a relative position.",
+                "",
+                "> ha expand <target> <direction> <blocks> - Expand the targets.",
+                "> ha contract <target> <direction> <blocks> - Contract the targets.",
+                "> ha shift <target> <direction> <blocks> - Shift the targets (does not resize)."
+        );
+    }
 
-        Action(String... names) {
+    enum Action {
+        POS1(false,"pos1", "p1", "1"),
+        POS2(false,"pos2", "p2", "2"),
+        CLEAR(false,"clear", "c"),
+        UNDO(false,"undo", "u"),
+        CONTRACT(false,"contract", "ct"),
+        SHIFT(false,"shift", "sh"),
+        EXPAND(false,"expand", "ex"),
+
+        SET(true,"set", "fill", "s", "f"),
+        WALLS(true,"walls", "w"),
+        SHELL(true,"shell", "shl"),
+        CLEARAREA(true,"cleararea", "ca"),
+        REPLACE(true,"replace", "r"),
+        COPY(true,"copy", "cp"),
+        PASTE(true,"paste", "p");
+
+        private final String[] names;
+        private final boolean invokesAProcess;
+
+        Action(boolean invokesAProcess, String... names) {
+            this.invokesAProcess = invokesAProcess;
             this.names = names;
         }
 
-        public static Action getByName(String name) {
+        public static Action getByName(String name, boolean canInvokeAProcess) {
             for (Action action : Action.values()) {
                 for (String alias : action.names) {
                     if (alias.equalsIgnoreCase(name)) {
+                        if(!canInvokeAProcess && action.invokesAProcess)
+                            return null;
                         return action;
                     }
                 }

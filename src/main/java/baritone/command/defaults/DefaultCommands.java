@@ -66,8 +66,8 @@ public final class DefaultCommands {
                 new WaypointsCommand(baritone),
                 new CommandAlias(baritone, "sethome", "Sets your home waypoint", "waypoints save home"),
                 new CommandAlias(baritone, "home", "Path to your home waypoint", "waypoints goto home"),
-                new SelCommand(baritone),
-                new HauseArea(baritone)
+                new SelCommand(baritone, false, "sel", "selection", "s"),
+                new SelCommand(baritone, true, "homearea", "ha")
         ));
         ExecutionControlCommands prc = new ExecutionControlCommands(baritone);
         commands.add(prc.pauseCommand);

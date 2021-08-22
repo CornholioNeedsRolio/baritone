@@ -43,7 +43,7 @@ public class CachedHomeAreas implements ICachedHomeAreas {
     @Override
     public synchronized void save(ISelectionManager manager)
     {
-        Path fileName = this.directory.resolve("CoolShit.mp4");
+        Path fileName = this.directory.resolve("SavedHomeAreas.mp4");
         try (
                 FileOutputStream fileOut = new FileOutputStream(fileName.toFile());
                 BufferedOutputStream bufOut = new BufferedOutputStream(fileOut);
@@ -65,7 +65,7 @@ public class CachedHomeAreas implements ICachedHomeAreas {
     @Override
     public ISelection[] load()
     {
-        Path fileName = this.directory.resolve("CoolShit.mp4");
+        Path fileName = this.directory.resolve("SavedHomeAreas.mp4");
         if (!Files.exists(fileName)) {
             return null;
         }
