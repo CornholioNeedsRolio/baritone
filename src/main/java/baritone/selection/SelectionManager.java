@@ -20,6 +20,7 @@ public class SelectionManager implements ISelectionManager {
     private ISelection[] selectionsArr = new ISelection[0];
     private boolean isHomeArea;
     IBaritone baritone;
+    private int selectionForEdit = -1;
 
     public SelectionManager(Baritone baritone, boolean homeAreaManager) {
         new SelectionRenderer(baritone, this);
@@ -31,15 +32,13 @@ public class SelectionManager implements ISelectionManager {
         selectionsArr = selections.toArray(new ISelection[0]);
         if(isHomeArea)
             baritone.getWorldProvider().getCurrentWorld().getCachedHomeAreas().save(this);
+        selectionForEdit = selectionForEdit >= selectionsArr.length ?  selectionsArr.length - 1 : (selectionForEdit < 0 ? 0 : selectionForEdit);
     }
-
-
 
     @Override
     public synchronized ISelection addSelection(ISelection selection) {
         selections.add(selection);
         resetSelectionsArr();
-
         return selection;
     }
 
@@ -143,5 +142,24 @@ public class SelectionManager implements ISelectionManager {
                 return true;
 
         return false;
+    }
+
+    @Override
+    public void increaseEditedSelectionIndex(int value)
+    {
+        selectionForEdit += value;
+        selectionForEdit = selectionForEdit >= selectionsArr.length ?  selectionsArr.length - 1 : (selectionForEdit < 0 ? 0 : selectionForEdit);
+    }
+
+    @Override
+    public void unsetEditedSelectionIndex()
+    {
+        selectionForEdit = -1;
+    }
+
+    @Override
+    public int getEditedSelectionIndex()
+    {
+        return selectionForEdit;
     }
 }

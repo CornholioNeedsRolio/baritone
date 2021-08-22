@@ -1179,6 +1179,16 @@ public final class Settings {
     public final Setting<Color> colorSelection = new Setting<>(Color.CYAN);
 
     /**
+     * The color of the selection that was selected for changes
+     */
+    public final Setting<Color> colorSelectedSelection = new Setting<>(Color.white);
+
+    /**
+     * The color of the selection that was selected for changes
+     */
+    public final Setting<Color> colorHomeAreaSelectedSelection = new Setting<>(Color.pink);
+
+    /**
      * The color of the selection pos 1
      */
     public final Setting<Color> colorSelectionPos1 = new Setting<>(Color.BLACK);

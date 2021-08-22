@@ -36,6 +36,7 @@ import baritone.api.selection.ISelectionManager;
 import baritone.api.utils.BetterBlockPos;
 import baritone.api.utils.BlockOptionalMeta;
 import baritone.api.utils.BlockOptionalMetaLookup;
+import baritone.selection.SelectionManager;
 import baritone.utils.IRenderer;
 import baritone.utils.BlockStateInterface;
 import baritone.utils.schematic.StaticSchematic;
@@ -45,6 +46,7 @@ import net.minecraft.util.EnumFacing;
 import net.minecraft.util.math.AxisAlignedBB;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Vec3i;
+import org.lwjgl.Sys;
 
 import java.awt.*;
 import java.util.List;
@@ -256,7 +258,7 @@ public class SelCommand extends Command {
             if (selections.length < 1) {
                 throw new CommandInvalidStateException("No selections found");
             }
-            selections = transformTarget.transform(selections);
+            selections = transformTarget.transform(selections, manager);
             for (ISelection selection : selections) {
                 if (action == Action.EXPAND) {
                     manager.expand(selection, direction, blocks);
@@ -267,6 +269,14 @@ public class SelCommand extends Command {
                 }
             }
             logDirect(String.format("Transformed %d selections", selections.length));
+        }
+        else if(action == Action.NEXT || action == Action.PREV)
+        {
+            manager.increaseEditedSelectionIndex(action == Action.NEXT ? 1 : -1);
+        }
+        else if(action == Action.UNSELMAIN)
+        {
+            manager.unsetEditedSelectionIndex();
         }
     }
 
@@ -351,7 +361,12 @@ public class SelCommand extends Command {
                 "",
                 "> sel expand <target> <direction> <blocks> - Expand the targets.",
                 "> sel contract <target> <direction> <blocks> - Contract the targets.",
-                "> sel shift <target> <direction> <blocks> - Shift the targets (does not resize)."
+                "> sel shift <target> <direction> <blocks> - Shift the targets (does not resize).",
+                "",
+                "Selection cursor can be adjusted by using the following commands:",
+                "> sel next/n - Moves the cursor to the next selection",
+                "> sel previous/prev/p - Moves the cursor to the previous selection",
+                "> sel resetcursor/rescur/rc - Deselects cursor position"
         );
     }
 
@@ -363,7 +378,7 @@ public class SelCommand extends Command {
                 "",
                 "Also they are saved so you don't have to worry about disconnection or closing your minecraft instance",
                 "",
-                "The expand/contract/shift commands use a kind of selector to choose which selections to target. Supported ones are a/all, n/newest, and o/oldest.",
+                "The expand/contract/shift commands use a kind of selector to choose which selections to target. Supported ones are a/all, n/newest, o/oldest and s/selected.",
                 "",
                 "Usage:",
                 "> ha pos1/p1/1 - Set position 1 to your current position.",
@@ -373,7 +388,12 @@ public class SelCommand extends Command {
                 "",
                 "> ha expand <target> <direction> <blocks> - Expand the targets.",
                 "> ha contract <target> <direction> <blocks> - Contract the targets.",
-                "> ha shift <target> <direction> <blocks> - Shift the targets (does not resize)."
+                "> ha shift <target> <direction> <blocks> - Shift the targets (does not resize).",
+                "",
+                "Selection cursor can be adjusted by using the following commands:",
+                "> ha next/n - Moves the cursor to the next selection",
+                "> ha previous/prev/p - Moves the cursor to the previous selection",
+                "> ha resetcursor/rescur/rc - Deselects cursor position"
         );
     }
 
@@ -385,6 +405,11 @@ public class SelCommand extends Command {
         CONTRACT(false,"contract", "ct"),
         SHIFT(false,"shift", "sh"),
         EXPAND(false,"expand", "ex"),
+
+        NEXT(false, "next", "n"),
+        PREV(false, "previous", "prev", "p"),
+        UNSELMAIN(false, "resetcursor", "rescur", "rc"),
+
 
         SET(true,"set", "fill", "s", "f"),
         WALLS(true,"walls", "w"),
@@ -427,7 +452,9 @@ public class SelCommand extends Command {
     enum TransformTarget {
         ALL(sels -> sels, "all", "a"),
         NEWEST(sels -> new ISelection[]{sels[sels.length - 1]}, "newest", "n"),
-        OLDEST(sels -> new ISelection[]{sels[0]}, "oldest", "o");
+        OLDEST(sels -> new ISelection[]{sels[0]}, "oldest", "o"),
+        SELECTED(sels -> new ISelection[]{sels[0]}, "selected", "s");
+
         private final Function<ISelection[], ISelection[]> transform;
         private final String[] names;
 
@@ -436,7 +463,13 @@ public class SelCommand extends Command {
             this.names = names;
         }
 
-        public ISelection[] transform(ISelection[] selections) {
+        public ISelection[] transform(ISelection[] selections, ISelectionManager manager) {
+            if(this == SELECTED) { //kinda nasty but it works
+                int sel = manager.getEditedSelectionIndex();
+                if(sel >= 0 && sel < selections.length)
+                    return transform.apply(new ISelection[]{selections[sel]});
+            }
+
             return transform.apply(selections);
         }
 

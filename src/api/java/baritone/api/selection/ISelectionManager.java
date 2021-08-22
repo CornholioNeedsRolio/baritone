@@ -126,4 +126,17 @@ public interface ISelectionManager {
 
      */
     boolean selectionContainsPoint(BlockPos vector);
+
+    /**
+     * it will increase the value of currently selected selection, does it make sense? who tf knows :P
+     *
+     * selected selection, that sounds funny for some reason
+     */
+    void increaseEditedSelectionIndex(int value);
+    /**
+    *this exists so you can unselect the edited selection
+     */
+    void unsetEditedSelectionIndex();
+
+    int getEditedSelectionIndex();
 }
