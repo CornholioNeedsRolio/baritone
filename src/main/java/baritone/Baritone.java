@@ -81,6 +81,7 @@ public class Baritone implements IBaritone {
     private ExploreProcess exploreProcess;
     private BackfillProcess backfillProcess;
     private FarmProcess farmProcess;
+    public FarmEChest echestFarmer;
 
     private PathingControlManager pathingControlManager;
     private SelectionManager selectionManager;
@@ -117,6 +118,7 @@ public class Baritone implements IBaritone {
             this.pathingControlManager.registerProcess(exploreProcess = new ExploreProcess(this));
             this.pathingControlManager.registerProcess(backfillProcess = new BackfillProcess(this));
             this.pathingControlManager.registerProcess(farmProcess = new FarmProcess(this));
+            this.pathingControlManager.registerProcess(echestFarmer = new FarmEChest(this));
         }
 
         this.worldProvider = new WorldProvider(this);
@@ -190,6 +192,9 @@ public class Baritone implements IBaritone {
     public FarmProcess getFarmProcess() {
         return this.farmProcess;
     }
+
+    @Override
+    public FarmEChest getEchestFarmer() { return this.echestFarmer; }
 
     @Override
     public PathingBehavior getPathingBehavior() {

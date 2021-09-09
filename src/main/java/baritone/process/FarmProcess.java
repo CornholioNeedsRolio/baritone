@@ -241,6 +241,18 @@ public final class FarmProcess extends BaritoneProcessHelper implements IFarmPro
         }
 
         baritone.getInputOverrideHandler().clearAllKeys();
+
+        for (BlockPos pos : bonemealable) {
+            Optional<Rotation> rot = RotationUtils.reachable(ctx, pos);
+            if (rot.isPresent() && isSafeToCancel && baritone.getInventoryBehavior().throwaway(true, this::isBoneMeal)) {
+                baritone.getLookBehavior().updateTarget(rot.get(), true);
+                if (ctx.isLookingAt(pos)) {
+                    baritone.getInputOverrideHandler().setInputForceState(Input.CLICK_RIGHT, true);
+                }
+                return new PathingCommand(null, PathingCommandType.REQUEST_PAUSE);
+            }
+        }
+
         for (BlockPos pos : toBreak) {
             Optional<Rotation> rot = RotationUtils.reachable(ctx, pos);
             if (rot.isPresent() && isSafeToCancel) {
@@ -266,16 +278,6 @@ public final class FarmProcess extends BaritoneProcessHelper implements IFarmPro
                     }
                     return new PathingCommand(null, PathingCommandType.REQUEST_PAUSE);
                 }
-            }
-        }
-        for (BlockPos pos : bonemealable) {
-            Optional<Rotation> rot = RotationUtils.reachable(ctx, pos);
-            if (rot.isPresent() && isSafeToCancel && baritone.getInventoryBehavior().throwaway(true, this::isBoneMeal)) {
-                baritone.getLookBehavior().updateTarget(rot.get(), true);
-                if (ctx.isLookingAt(pos)) {
-                    baritone.getInputOverrideHandler().setInputForceState(Input.CLICK_RIGHT, true);
-                }
-                return new PathingCommand(null, PathingCommandType.REQUEST_PAUSE);
             }
         }
 

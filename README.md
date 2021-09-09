@@ -17,3 +17,4 @@ New settings:
     -mapArtMode: not new, but I changed how it works, now it will care about any blocks above the first non-air block, including the original block. Usefull if you have some blocks that need a block under them to be placed like carpets
     -homearea(or ha for short): is a cool feature, it works like sel but whatever is inside this selection will be protected from baritone, no longer it will break your walls or place blocks in the middle of your living room, now it will use the door as a normal being :P
     -safeFarming: baritone wont break or place blocks while #farm -ing
+    -echest: new command, it will turn chests into obsidian, I recommend you to use this commands with some hoppers under you

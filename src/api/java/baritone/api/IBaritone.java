@@ -140,6 +140,11 @@ public interface IBaritone {
     ICommandManager getCommandManager();
 
     /**
+     * @return The {@link IFarmEChest} instance
+     * @see IFarmEChest
+     */
+    IFarmEChest getEchestFarmer();
+    /**
      * Open click
      */
     void openClick();

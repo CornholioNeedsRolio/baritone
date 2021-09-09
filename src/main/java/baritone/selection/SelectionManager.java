@@ -32,7 +32,8 @@ public class SelectionManager implements ISelectionManager {
         selectionsArr = selections.toArray(new ISelection[0]);
         if(isHomeArea)
             baritone.getWorldProvider().getCurrentWorld().getCachedHomeAreas().save(this);
-        selectionForEdit = selectionForEdit >= selectionsArr.length ?  selectionsArr.length - 1 : (selectionForEdit < 0 ? 0 : selectionForEdit);
+        if(selectionForEdit >= 0)
+            selectionForEdit = selectionForEdit >= selectionsArr.length ?  selectionsArr.length - 1 : (selectionForEdit < 0 ? 0 : selectionForEdit);
     }
 
     @Override
