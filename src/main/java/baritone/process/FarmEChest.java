@@ -81,10 +81,9 @@ public class FarmEChest extends BaritoneProcessHelper implements IFarmEChest {
     {
         if(Minecraft.getMinecraft().isGamePaused())
             return new PathingCommand(null, PathingCommandType.REQUEST_PAUSE);
-        BetterBlockPos playerFeet = startingPos; //discord mods will sniff on these, hide this code piece from them
+        BetterBlockPos playerFeet = ctx.playerFeet(); //discord mods will sniff on these, hide this code piece from them
 
-        if(!playerFeet.equals(ctx.playerFeet())) {
-            //logDirect("I hate trannies with even more passion "+playerFeet.toString()+"!=" +ctx.playerFeet().toString());
+        if(!startingPos.equals(playerFeet)) {
             return new PathingCommand(new GoalBlock(playerFeet), PathingCommandType.SET_GOAL_AND_PATH);
         }
         List<BlockPos> toPlace = new ArrayList<>();
@@ -121,7 +120,7 @@ public class FarmEChest extends BaritoneProcessHelper implements IFarmEChest {
                     }
                     continue;
                 }
-                else if(!placedLastTick)
+                else if(!placedLastTick || !baritone.getInventoryBehavior().throwaway(false, this::isEChest))
                 {
                     goalz.add(new BuilderProcess.GoalBreak(pos));
                     Optional<Rotation> rot = RotationUtils.reachable(ctx, pos);
@@ -144,7 +143,7 @@ public class FarmEChest extends BaritoneProcessHelper implements IFarmEChest {
         }
         placedLastTick = false;
 
-        if(calcFailed || !baritone.getInventoryBehavior().throwaway(false, this::isEChest)) {
+        if(calcFailed || (!baritone.getInventoryBehavior().throwaway(false, this::isEChest))) {
             logDirect("EChest process failed");
             onLostControl();
             return new PathingCommand(null, PathingCommandType.REQUEST_PAUSE);

@@ -69,7 +69,8 @@ public final class DefaultCommands {
                 new CommandAlias(baritone, "home", "Path to your home waypoint", "waypoints goto home"),
                 new SelCommand(baritone, false, "sel", "selection", "s"),
                 new SelCommand(baritone, true, "homearea", "ha"),
-                new EChestFarmCommand(baritone)
+                new EChestFarmCommand(baritone),
+                new MobProofCommand(baritone)
         ));
         ExecutionControlCommands prc = new ExecutionControlCommands(baritone);
         commands.add(prc.pauseCommand);

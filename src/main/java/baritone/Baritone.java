@@ -21,6 +21,7 @@ import baritone.api.BaritoneAPI;
 import baritone.api.IBaritone;
 import baritone.api.Settings;
 import baritone.api.event.listener.IEventBus;
+import baritone.api.process.IMobProofProcess;
 import baritone.api.utils.Helper;
 import baritone.api.utils.IPlayerContext;
 import baritone.behavior.*;
@@ -81,7 +82,8 @@ public class Baritone implements IBaritone {
     private ExploreProcess exploreProcess;
     private BackfillProcess backfillProcess;
     private FarmProcess farmProcess;
-    public FarmEChest echestFarmer;
+    private FarmEChest echestFarmer;
+    private MobProofProcess mobProofProcess;
 
     private PathingControlManager pathingControlManager;
     private SelectionManager selectionManager;
@@ -119,6 +121,7 @@ public class Baritone implements IBaritone {
             this.pathingControlManager.registerProcess(backfillProcess = new BackfillProcess(this));
             this.pathingControlManager.registerProcess(farmProcess = new FarmProcess(this));
             this.pathingControlManager.registerProcess(echestFarmer = new FarmEChest(this));
+            this.pathingControlManager.registerProcess(mobProofProcess = new MobProofProcess(this));
         }
 
         this.worldProvider = new WorldProvider(this);
@@ -189,9 +192,13 @@ public class Baritone implements IBaritone {
         return this.mineProcess;
     }
 
+    @Override
     public FarmProcess getFarmProcess() {
         return this.farmProcess;
     }
+
+    @Override
+    public MobProofProcess getMobProofProcess() { return this.mobProofProcess; }
 
     @Override
     public FarmEChest getEchestFarmer() { return this.echestFarmer; }

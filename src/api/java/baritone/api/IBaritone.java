@@ -144,6 +144,13 @@ public interface IBaritone {
      * @see IFarmEChest
      */
     IFarmEChest getEchestFarmer();
+
+    /**
+     * @return The {@link IMobProofProcess} instance
+     * @see IMobProofProcess
+     */
+    IMobProofProcess getMobProofProcess();
+
     /**
      * Open click
      */

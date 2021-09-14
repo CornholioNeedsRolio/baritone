@@ -78,6 +78,7 @@ public final class BuilderProcess extends BaritoneProcessHelper implements IBuil
     private boolean paused;
     private int layer;
     private int numRepeats;
+    private int ticksRemaining;
     private List<IBlockState> approxPlaceable;
 
     public BuilderProcess(Baritone baritone) {
@@ -609,10 +610,20 @@ public final class BuilderProcess extends BaritoneProcessHelper implements IBuil
                         }
                     }
                 }
-                logDirect("Unable to do it. Pausing. resume to resume, cancel to cancel");
-                paused = true;
+
+                if(--ticksRemaining < 0)
+                {
+                    if(ticksRemaining == 49)
+                        logDirect("Unable to do it. Waiting for it to be possible, you can pause or stop this");
+                    paused = true;
+                }
+                else
+                    logDirect("Unable to do it. Stopping");
                 return new PathingCommand(null, PathingCommandType.REQUEST_PAUSE);
             }
+        else
+            ticksRemaining = 50;
+
         return new PathingCommandContext(goal, PathingCommandType.FORCE_REVALIDATE_GOAL_AND_PATH, bcc);
     }
 
